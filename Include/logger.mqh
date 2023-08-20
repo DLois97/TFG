@@ -6,7 +6,9 @@ class Logger{
         Logger(int lvl){
                  level = lvl;
              };
-        ~Logger();
+        Logger(){
+            level = 1;
+        };
 
         void info(string msg){
                 if(level >= 1){
