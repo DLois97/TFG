@@ -33,7 +33,7 @@ int openPosition(int operation_type, double lot, int magic_n, Logger *logger) {
  int ticket = OrderSend(NULL, operation_type, lot, price, 0, 0, 0, "", magic_n);
  if (ticket < 0) {
      //If the error is ERR_NO_CONNECTION, we will wait for 5 ticks to see if the connection is restored
-     if (GetLastError() == ERR_NO_CONNECTION) {
+     if (GetLastError() == ERR_NO_CONNECTION && && !IsTesting() && !IsOptimization()) {
           while (!RefreshRates()) {
              logger.error("No connection, waiting server response...");
              Sleep(2000); // Esperar antes de volver a intentar
