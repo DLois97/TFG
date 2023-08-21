@@ -1,42 +1,81 @@
 #include <Logger.mqh>
 
-double getOpenHeikenAshi(int period, Logger *logger) {
-    logger.debug("Calculating open heiken ashi candle");
-    double previous_candle_open = Open[period - 1];
-    double previous_candle_close = Close[period - 1];
-    double result = ((previous_candle_open + previous_candle_close) / 2);
-    logger.info("calculating open heiken ashi for period: " + period + " previous_candle_open: " + previous_candle_open + " previous_candle_close: " + previous_candle_close + " result: " + result);
-    return (result); 
+double HAOpenBuffer[50];
+double HACloseBuffer[50];
+double HAHighBuffer[50];
+double HALowBuffer[50];
+int prev_calculated = 0;
+
+//TODO: Hay que hacer que los buffers sean dinámicos y a la hora de vulver a calcular las velas ya generadas
+//No se vuelva a hacer calculos ya realizados
+//Este fragmento de código es el indicador "Heiken Ashi.mq4" extraido fuera del onCalculate()
+void generateHeikenAshiValues(){
+    int    i,pos;
+    double haOpen,haHigh,haLow,haClose;
+    _log.info("Bars; " + Bars);
+    if (Bars <= 10) {
+        return;
+    }
+    if (ArraySize(HAOpenBuffer) <= Bars) {
+        _log.info("Entramos en el Resize");
+        ArrayResize(HAOpenBuffer, Bars*2);
+        ArrayResize(HACloseBuffer, Bars*2);
+        ArrayResize(HAHighBuffer, Bars*2);
+        ArrayResize(HALowBuffer, Bars*2);
+    }
+    ArraySetAsSeries(HALowBuffer,true);
+    ArraySetAsSeries(HAHighBuffer,true);
+    ArraySetAsSeries(HAOpenBuffer,true);
+    ArraySetAsSeries(HACloseBuffer,true);
+
+    HAOpenBuffer[i] = (Open[i] + Close[i]) / 2;
+    HACloseBuffer[i] = (Open[i] + High[i] + Low[i] + Close[i]) / 4;
+    HAHighBuffer[i] = MathMax(High[i], MathMax(HAOpenBuffer[i], HACloseBuffer[i]));
+    HALowBuffer[i] = MathMin(Low[i], MathMin(HAOpenBuffer[i], HACloseBuffer[i]));
+    
+    _log.info("Entramos a los calculos previos");
+    if(prev_calculated>1) {
+        pos=prev_calculated-1;
+    } else {
+        //--- set first candle
+        _log.info("Calculamos la primera vela");
+        if(Open[0]<Close[0]) {
+            HALowBuffer[0]=Low[0];
+            HAHighBuffer[0]=High[0];
+        } else {
+            HALowBuffer[0]=High[0];
+            HAHighBuffer[0]=Low[0];
+        }
+        HAOpenBuffer[0]=Open[0];
+        HACloseBuffer[0]=Close[0];
+        //---
+        pos=1;
+    }
+    //--- main loop of calculations
+   for(i=pos; i<Bars; i++) {
+        _log.info("Calculamos la  vela" + i);
+        haOpen=(HAOpenBuffer[i-1]+HACloseBuffer[i-1])/2;
+        haClose=(Open[i]+High[i]+Low[i]+Close[i])/4;
+        haHigh=MathMax(High[i],MathMax(haOpen,haClose));
+        haLow=MathMin(Low[i],MathMin(haOpen,haClose));
+        if(haOpen<haClose) {
+            HALowBuffer[i]=haLow;
+            HAHighBuffer[i]=haHigh;
+        } else {
+            HALowBuffer[i]=haHigh;
+            HAHighBuffer[i]=haLow;
+        }
+        HAOpenBuffer[i]=haOpen;
+        HACloseBuffer[i]=haClose;
+        _log.info("fin calculo de la  vela" + i);
+    }
+
+    prev_calculated=i;
+
+//--- done
+    
+
 }
 
-double getCloseHeikenAshi(int period, Logger *logger) {
-    logger.debug("Calculating close heiken ashi candle");
-    double open = Open[period];
-    double close = Close[period];
-    double high = High[period];
-    double low = Low[period];
-    double result = ((open + high + low + close) / 4);
-    logger.info("calculating close heiken ashi for period: " + period + " open: " + open + " close: " + close + " high: " + high + " low: " + low + " result: " + result);
-    return (result); 
-}
 
-double getHighHeikenAshi(int period, Logger *logger) {
-    logger.debug("Calculating high heiken ashi candle");
-    double openHA = getOpenHeikenAshi(period, logger);
-    double closeHA =getCloseHeikenAshi(period, logger);
-    double high = High[period];
-    double result = MathMax(high, MathMax(openHA, closeHA));
-    logger.info("calculating high heiken ashi for period: " + period + " openHA: " + openHA + " closeHA: " + closeHA + " high:" + high + " result: " + result);
-    return (result); 
-}
-
-double getLowHeikenAshi(int period, Logger *logger) {
-    logger.debug("Calculating low heiken ashi candle");
-    double openHA = getOpenHeikenAshi(period, logger);
-    double closeHA =getCloseHeikenAshi(period, logger);
-    double low = Low[period];
-    double result = MathMin(low, MathMin(openHA, closeHA));
-    logger.info("calculating low heiken ashi for period: " + period + " openHA: " + openHA + " closeHA: " + closeHA + " low:" + low + " result: " + result);
-    return (result); 
-}
 
