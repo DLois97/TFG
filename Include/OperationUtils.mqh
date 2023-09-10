@@ -33,30 +33,28 @@ bool handleOpenPosition(long id_operation, int opposite_candles, Logger *logger)
     //If we have an open position, we check if we have to close it
     //We will close the long or short position in case we found X Heiken Ashi candles in the opposite direction
     if (order_selected) {
-        if (OrderType() == OP_BUY) {
-            bool close_long = checkCloseOperation(opposite_candles, OP_BUY);
-            if (close_long) {
-                _log.debug("We want to close a long position");
-                order_closed = closePosition(id_operation, logger);
-            }
-        } else if (OrderType() == OP_SELL){
-            bool close_short = checkCloseOperation(opposite_candles, OP_SELL);
-            if (close_short) {
-                _log.debug("We want to close a short position");
-                order_closed = closePosition(id_operation, logger);
-            }
+        bool close_op = checkCloseOperation(opposite_candles, OrderType());
+        if (close_op) {
+            _log.debug("We want to close the position");
+            order_closed = closePosition(id_operation, logger);
         }
     }
     return order_closed;
 }
 
+/*
+In this method we get the number of candles that we want to check in order to close our open operation. 
+If the operation_type variable correspond with OP_BUY we will check if we have at least one bull candle in the last N candles.
+If the operation_type variable correspond with OP_SELL we will check if we have at least one bear candle in the last N candles.
+*/  
 bool checkCloseOperation(int number_of_candles, int operation_type) {
   for (int i = 0; i < number_of_candles; i++) {
-    //We get the open and close values for the Heiken Ashi candles we don't care about the high and low values because we are not going to use them
-    _log.debug("We are checking the candle number " + i);
+    //We get the open and close values for the Heiken Ashi candles to know if there is a bull or bear candle
+    //We use the iCustom function to get the values of the Heiken Ashi candles, for the open values we have to use 2 as mode variable
+    //and for the close values we have to use 3.
     double openHA = iCustom(NULL, 0, "Heiken Ashi", 0, 2, i);
     double closeHA = iCustom(NULL, 0, "Heiken Ashi", 0, 3, i);
-    
+
     _log.debug("openHA: " + openHA + ", closeHA: " + closeHA);
     //In case we were long we check if we have at least one bull candle (positive) in our heiken ashi candle interval to not close the operation
     if (operation_type == OP_BUY) {
@@ -64,6 +62,7 @@ bool checkCloseOperation(int number_of_candles, int operation_type) {
       bool is_bull_candle = openHA < closeHA;
       _log.debug("is_bull_candle: " + is_bull_candle);
       if (is_bull_candle) { return false; }
+
     //In case we were short we check if we have at least one bear candle (negative) in our heiken ashi candle interval to not close the operation
     } else if (operation_type == OP_SELL) {
       _log.debug("We are looking for a bear candle");
@@ -71,32 +70,16 @@ bool checkCloseOperation(int number_of_candles, int operation_type) {
       _log.debug("is_bear_candle: " + is_bear_candle);
       if (is_bear_candle) { return false;}
     }
+
   }
   //If we didn't find any candle in the same direction as our possition in the last N candles we need to close it
   _log.info("We found " + number_of_candles + " candles in the opposite direction, we will close the operation");
   return true;
 }
 
-int openPosition(int operation_type, double lot, int magic_n, Logger *logger) {
- logger.info("Opening order: " + operation_type + " with lotage: " + lot);
- double price = (OrderType() == OP_BUY) ? Ask : Bid;
- int ticket = OrderSend(NULL, operation_type, lot, price, 0, 0, 0, "", magic_n);
- if (ticket < 0) {
-     //If the error is ERR_NO_CONNECTION, we will wait for 5 ticks to see if the connection is restored
-     if (GetLastError() == ERR_NO_CONNECTION && !IsTesting() && !IsOptimization()) {
-          while (!RefreshRates()) {
-             logger.error("No connection, waiting server response...");
-             Sleep(2000); // Esperar antes de volver a intentar
-         }
-     }
-     logger.error("Error opening order: " + GetLastError());
- }
 
- return(ticket);
-}
-
+//This method will return the lot size based on the risk percentage of the account balance
 double getLotSize(double risk, double balance, double price, Logger *logger) {
-    //We get the lot size based on the risk percentage of the account balance
     double valueAccountLot = AccountBalance() * risk;
     logger.debug("Value account lot: " + valueAccountLot);
     double lotSize = MarketInfo(Symbol(), MODE_LOTSIZE);
