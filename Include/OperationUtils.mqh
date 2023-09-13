@@ -48,7 +48,7 @@ If the operation_type variable correspond with OP_BUY we will check if we have a
 If the operation_type variable correspond with OP_SELL we will check if we have at least one bear candle in the last N candles.
 */  
 bool checkCloseOperation(int number_of_candles, int operation_type) {
-  for (int i = 0; i < number_of_candles; i++) {
+  for (int i = 1; i <= number_of_candles; i++) {
     //We get the open and close values for the Heiken Ashi candles to know if there is a bull or bear candle
     //We use the iCustom function to get the values of the Heiken Ashi candles, for the open values we have to use 2 as mode variable
     //and for the close values we have to use 3.
