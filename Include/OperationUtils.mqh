@@ -27,6 +27,7 @@ bool closePosition(int idOp, Logger *logger) {
     return false;
 }
 
+//This method first check if we have to  close the operation and then it will close it
 bool handleOpenPosition(long id_operation, int opposite_candles, Logger *logger){
     bool order_selected = OrderSelect(id_operation, SELECT_BY_TICKET);
     bool order_closed = false;
@@ -37,6 +38,8 @@ bool handleOpenPosition(long id_operation, int opposite_candles, Logger *logger)
         if (close_op) {
             _log.debug("We want to close the position");
             order_closed = closePosition(id_operation, logger);
+            int check=GetLastError();
+            if(check!=ERR_NO_ERROR) {logger.error("Order not close correctly: " + ErrorDescription(check));}
         }
     }
     return order_closed;
@@ -73,7 +76,7 @@ bool checkCloseOperation(int number_of_candles, int operation_type) {
 
   }
   //If we didn't find any candle in the same direction as our possition in the last N candles we need to close it
-  _log.info("We found " + number_of_candles + " candles in the opposite direction, we will close the operation");
+  _log.debug("We found " + number_of_candles + " candles in the opposite direction, we will close the operation");
   return true;
 }
 
