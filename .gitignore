@@ -1,0 +1,18 @@
+*.ex4
+/Files
+/Images
+/Indicators
+/Libraries
+/Logs
+/Presets
+/Projects
+/Scripts
+/Shared Projects
+/Include/*/
+*.dat
+stderror.mqh
+stdlib.mqh
+StdLibErr.mqh
+WinUser32.mqh
+Object.mqh
+MovingAverages.mqh
