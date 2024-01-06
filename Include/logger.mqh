@@ -1,3 +1,6 @@
+#property copyright "Copyright 2023, Daniel Lois Nuevo"
+#property link      "https://github.com/DLois97"
+#property version   "1.0"
 
 class Logger{
     protected:
