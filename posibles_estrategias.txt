@@ -1,0 +1,18 @@
+
+
+VELAS HEIKEN ASHI CON MACD (PODRÍAMOS AÑADIRLE EL ADX COMO FILTRO) Y GESTION DE RIESGO.
+
+    La idea es mantener la primera idea que teníamos en el proyecto y cambiar la manera en la que salimos de la operación:
+
+        1. Cuando habrámos una operación, tendremos que establecer un stop loss acorde a una distancia en pips que le introduciremos al algoritmo.
+        2. Marcaremos un TP a una distancia escalada del stop loss, es decir, si tenemos el SL a 100 pips por debajo del precio pondremos el take profit a 200 pips por encima de este. De esta manera no olvidamos de indicadores para salir y solo los utilizamos para abrir la operacion
+
+
+CCI y RSI (Esta vez si SAR) 
+
+    La idea aqui es aplicar también la gestión monetaria para abrir operaciones con un TP o un SL.
+
+        La gestión monetaria se realiza de la misma manera que la hacemos en el algoritmo anterior
+
+
+Lo que conseguimos con esta gestión monetaria es disminuir el riesgo de tal manera que por cada vez que abrimos una operacion que nos de beneficio, si hemos situado el TP a 2x del SL, nos cubriría 2 operaciones falladas.

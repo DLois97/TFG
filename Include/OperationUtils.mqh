@@ -20,6 +20,22 @@ int getOpenPosition(int magic_n, Logger *logger, bool isLong) {
     return(result);
     }
 
+int getTotalOpenPosition(int magic_n) {
+    int total=OrdersTotal(); 
+    int result = 0;
+
+    //Check for an open position with the specified magic number
+    for(int i=0; i<total; i++) {
+        bool success = OrderSelect(i,SELECT_BY_POS); 
+        if(success && OrderMagicNumber() == magic_n) {
+            result++;
+            //logger.debug("Found open position: " + result);
+        } 
+    }
+
+    return(result);
+    }
+
     
 int getOpenPosition(int magic_n, Logger *logger) {
     int total=OrdersTotal(); 
