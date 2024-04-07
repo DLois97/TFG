@@ -74,7 +74,7 @@ bool handleOpenPosition(long id_operation, int opposite_candles, Logger *logger)
     if (order_selected) {
         bool close_op = checkCloseOperation(opposite_candles, OrderType());
         if (close_op) {
-            _log.debug("We want to close the position");
+            logger.debug("We want to close the position");
             order_closed = closePosition(id_operation, logger);
             int check=GetLastError();
             if(check!=ERR_NO_ERROR) {logger.error("Order not close correctly: " + ErrorDescription(check));}
@@ -96,25 +96,25 @@ bool checkCloseOperation(int number_of_candles, int operation_type) {
     double openHA = iCustom(NULL, 0, "Heiken Ashi", 0, 2, i);
     double closeHA = iCustom(NULL, 0, "Heiken Ashi", 0, 3, i);
 
-    _log.debug("openHA: " + openHA + ", closeHA: " + closeHA);
+    //log.debug("openHA: " + openHA + ", closeHA: " + closeHA);
     //In case we were long we check if we have at least one bull candle (positive) in our heiken ashi candle interval to not close the operation
     if (operation_type == OP_BUY) {
-      _log.debug("We are looking for a bull candle");
+      //log.debug("We are looking for a bull candle");
       bool is_bull_candle = openHA < closeHA;
-      _log.debug("is_bull_candle: " + is_bull_candle);
+      //log.debug("is_bull_candle: " + is_bull_candle);
       if (is_bull_candle) { return false; }
 
     //In case we were short we check if we have at least one bear candle (negative) in our heiken ashi candle interval to not close the operation
     } else if (operation_type == OP_SELL) {
-      _log.debug("We are looking for a bear candle");
+      //log.debug("We are looking for a bear candle");
       bool is_bear_candle = openHA > closeHA;
-      _log.debug("is_bear_candle: " + is_bear_candle);
+      //log.debug("is_bear_candle: " + is_bear_candle);
       if (is_bear_candle) { return false;}
     }
 
   }
   //If we didn't find any candle in the same direction as our possition in the last N candles we need to close it
-  _log.debug("We found " + number_of_candles + " candles in the opposite direction, we will close the operation");
+  //log.debug("We found " + number_of_candles + " candles in the opposite direction, we will close the operation");
   return true;
 }
 
